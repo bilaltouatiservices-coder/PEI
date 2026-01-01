@@ -1,52 +1,100 @@
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface HomeProps {
   onNavigate: (page: string, section: string | null) => void;
 }
 
 const Home: React.FC<HomeProps> = ({ onNavigate }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    // Trigger entry animation
+    setIsVisible(true);
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      
+      const { clientX, clientY } = e;
+      const { innerWidth, innerHeight } = window;
+      
+      // Calculate smooth parallax offset for centered text (very subtle)
+      const moveX = (clientX - innerWidth / 2) / 60;
+      const moveY = (clientY - innerHeight / 2) / 60;
+      
+      setOffset({ x: moveX, y: moveY });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   return (
     <div>
-      {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
-        <div className="absolute top-0 right-0 -z-10 w-1/2 h-full bg-blue-50 rounded-bl-[100px]"></div>
-        <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="order-2 lg:order-1">
-            <span className="inline-block px-4 py-1 bg-blue-100 text-blue-600 rounded-full font-bold mb-6">منصة المراجعة الأولى فالمغرب</span>
-            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
+      {/* Hero Section - Centered with Animations */}
+      <section 
+        className="relative py-24 lg:py-40 overflow-hidden bg-gradient-to-b from-blue-50 to-white text-center" 
+        ref={containerRef}
+      >
+        {/* Decorative Floating Elements (Parallax) */}
+        <div 
+          className="absolute top-20 left-10 w-32 h-32 bg-blue-200/30 rounded-full blur-2xl -z-10 transition-transform duration-500 ease-out"
+          style={{ transform: `translate(${offset.x * -1.5}px, ${offset.y * -1.5}px)` }}
+        ></div>
+        <div 
+          className="absolute bottom-20 right-10 w-48 h-48 bg-green-200/30 rounded-full blur-3xl -z-10 transition-transform duration-700 ease-out"
+          style={{ transform: `translate(${offset.x * 2}px, ${offset.y * 2}px)` }}
+        ></div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div 
+            className={`max-w-4xl mx-auto transition-all duration-1000 ease-out transform ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            }`}
+            style={{ 
+              transform: `translate(${offset.x}px, ${offset.y}px)` 
+            }}
+          >
+            <span className="inline-block px-4 py-1 bg-blue-100 text-blue-600 rounded-full font-bold mb-8 animate-pulse">
+              منصة المراجعة الأولى فالمغرب
+            </span>
+            
+            <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 leading-tight mb-8">
               أداة بسيطة وفعّالة للمراجعة، <br />
               <span className="text-blue-600">بلا ضغط ولا ضياع وقت</span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              فهم ليدوروس ديالك بالدارجة، مراجعة سريعة بالخرائط الذهنية وتمارين محلولة باش تضمن النجاح ديالك.
+            
+            <p className="text-xl lg:text-2xl text-gray-600 mb-12 leading-relaxed max-w-2xl mx-auto">
+              فهم ليدوروس ديالك بالدارجة، مراجعة سريعة بالخرائط الذهنية وتمارين محلولة باش تضمن النجاح ديالك فكاع ليمودول.
             </p>
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 sm:space-x-reverse">
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 sm:space-x-reverse">
               <button 
                 onClick={() => {
                   const el = document.getElementById('categories');
                   el?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition shadow-lg flex items-center justify-center space-x-2 space-x-reverse"
+                className="w-full sm:w-auto bg-blue-600 text-white px-10 py-5 rounded-2xl font-bold text-xl hover:bg-blue-700 transition shadow-xl flex items-center justify-center group"
               >
                 <span>تصفح الملخصات</span>
-                <i className="fas fa-arrow-left"></i>
+                <i className="fas fa-arrow-left mr-3 group-hover:translate-x-[-5px] transition-transform"></i>
               </button>
+              
               <button 
                 onClick={() => onNavigate('pricing', null)}
-                className="bg-white text-blue-600 border-2 border-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-50 transition"
+                className="w-full sm:w-auto bg-white text-blue-600 border-2 border-blue-600 px-10 py-5 rounded-2xl font-bold text-xl hover:bg-blue-50 transition"
               >
                 اشترك الآن
               </button>
             </div>
           </div>
-          <div className="order-1 lg:order-2">
-            <img 
-              src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=1200" 
-              alt="Students studying together in a library" 
-              className="rounded-3xl shadow-2xl w-full object-cover h-[400px] lg:h-auto"
-            />
-          </div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce opacity-50">
+          <i className="fas fa-chevron-down text-2xl text-blue-300"></i>
         </div>
       </section>
 
